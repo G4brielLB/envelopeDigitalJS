@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Envelope Digital - Criptografia RSA e AES</title>
+    <title>Envelope Digital</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <script src="https://cdn.jsdelivr.net/npm/node-forge@0.10.0/dist/forge.min.js"></script>
     <link rel="stylesheet" href="styles.css">
     <script src="script.js"></script>
 </head>
 <body>
-    <h1>Envelope Digital - Criptografia RSA e AES</h1>
+    <h1>Envelope Digital</h1>
 
     <section id="rsa-keygen">
         <h2>Gerador de Chaves RSA</h2>
@@ -58,46 +58,158 @@
         }
     </script>
 
-    <!-- Seção de Criptografia RSA -->
+    <!-- Nova Seção de Envelope Digital (AES + RSA) -->
     <div class="section">
-        <h2>Criptografia RSA com Chave Pública</h2>
+        <h2>Envelope Digital (RSA + AES)</h2>
+        <p>Esta seção combina criptografia RSA e AES: a chave AES é cifrada com RSA e o conteúdo é cifrado com AES.</p>
         
-        <!-- Tabs para alternar entre arquivo e texto -->
         <div class="tabs">
-            <div class="tab active" id="tabEncryptFile" onclick="switchEncryptTab('File')">Enviar Arquivo</div>
-            <div class="tab" id="tabEncryptText" onclick="switchEncryptTab('Text')">Escrever Chave</div>
+            <div class="tab active" id="tabPublicFile" onclick="switchPublicTab('File')">Entrada de Arquivo</div>
+            <div class="tab" id="tabPublicText" onclick="switchPublicTab('Text')">Entrada de Texto</div>
+        </div>
+        <!-- Entrada da Chave Pública RSA -->
+        <div class="tab-content active" id = "contentPublicFile">
+            <div class="file-input-container">
+                <label for="envelopeRsaKeyFile">Selecione a chave pública RSA (.pem):</label>
+                <input type="file" class="switch_file" id="envelopeRsaKeyFile" accept=".pem" />
+            </div>
+        </div>
+        <div class="tab-content" id="contentPublicText" >
+            <label for="publicTextInput">Digite o texto para criptografar:</label>
+            <textarea id="publicTextInput" rows="4" cols="50" placeholder="Digite a chave pública"></textarea>
+        </div>
+        <!-- Entrada de dados: Texto ou Arquivo -->
+        <div class="tabs">
+            <div class="tab active" id="tabEnvelopeText" onclick="switchEnvelopeTab('Text')">Entrada de Texto</div>
+            <div class="tab" id="tabEnvelopeFile" onclick="switchEnvelopeTab('File')">Entrada de Arquivo</div>
         </div>
         
-        <!-- Conteúdo da aba de envio de arquivo -->
-        <div id="contentEncryptFile" class="tab-content active">
+        <div id="contentEnvelopeText" class="tab-content active">
+            <label for="envelopeTextInput">Digite o texto para criptografar:</label>
+            <textarea id="envelopeTextInput" rows="4" cols="50" placeholder="Digite o texto a ser criptografado"></textarea>
+        </div>
+        
+        <div id="contentEnvelopeFile" class="tab-content">
             <div class="file-input-container">
-                <label for="encryptKeyFile">Selecione o arquivo da chave pública (.pem):</label>
-                <input type="file" class="switch_file" id="encryptKeyFile" accept=".pem" />
+                <label for="envelopeFileInput">Selecione o arquivo para criptografar:</label>
+                <input type="file" class="switch_file" id="envelopeFileInput" />
+                <p style="color: #666; font-size: 0.9em;">O arquivo será lido como texto. Para arquivos binários, use outra ferramenta.</p>
             </div>
         </div>
         
-        <!-- Conteúdo da aba de entrada de texto -->
-        <div id="contentEncryptText" class="tab-content">
-            <label for="encryptKeyText">Cole a chave pública:</label>
-            <textarea id="encryptKeyText" rows="5" cols="50" placeholder="Cole a chave pública aqui"></textarea>
+        <div class="options-group">
+            <div style="font-weight: bold; margin-bottom: 8px;">Configurações do Envelope Digital:</div>
+            
+            <div class="format-selector">
+                <span>Tamanho da chave AES:</span>
+                <label><input type="radio" name="envelopeKeySize" value="128" checked> 128 bits</label>
+                <label><input type="radio" name="envelopeKeySize" value="192"> 192 bits</label>
+                <label><input type="radio" name="envelopeKeySize" value="256"> 256 bits</label>
+            </div>
+            
+            <div class="format-selector">
+                <span>Modo de operação AES:</span>
+                <label><input type="radio" name="envelopeMode" value="CBC" checked> CBC</label>
+                <label><input type="radio" name="envelopeMode" value="ECB"> ECB</label>
+            </div>
+            
+            <div class="format-selector">
+                <span>Formato de saída:</span>
+                <label><input type="radio" name="envelopeOutputFormat" value="BASE64" checked> BASE64</label>
+                <label><input type="radio" name="envelopeOutputFormat" value="HEX"> HEX</label>
+            </div>
         </div>
         
-        <label for="messageInput">Digite a mensagem para criptografar:</label>
-        <textarea id="messageInput" rows="4" cols="50"></textarea>
-        <br>
+        <button onclick="createDigitalEnvelope()">Criar Envelope Digital</button>
         
-        <div class="format-selector">
-            <span>Formato de saída:</span>
-            <label><input type="radio" name="outputFormat" value="BASE64" checked> BASE64</label>
-            <label><input type="radio" name="outputFormat" value="HEX"> HEX</label>
+        <div class="result-container" id="envelopeResultContainer" style="display: none;">
+            <h3>Resultado do Envelope Digital:</h3>
+            
+            <div>
+                <h4>Chave AES cifrada com RSA:</h4>
+                <p id="envelopeKeyOutput" class="message-output"></p>
+                <button onclick="downloadEnvelopeOutput('envelopeKeyOutput', 'chave_aes_cifrada.txt')">Baixar chave cifrada</button>
+            </div>
+            
+            <div id="envelopeIvContainer" style="margin-top: 15px;">
+                <h4>Vetor de Inicialização (IV):</h4>
+                <p id="envelopeIvOutput" class="message-output"></p>
+                <button onclick="downloadEnvelopeOutput('envelopeIvOutput', 'iv_envelope.txt')">Baixar IV</button>
+            </div>
+            
+            <div style="margin-top: 15px;">
+                <h4>Conteúdo Cifrado com AES:</h4>
+                <p id="envelopeCipherOutput" class="message-output"></p>
+                <button onclick="downloadEnvelopeOutput('envelopeCipherOutput', 'conteudo_cifrado_aes.txt')">Baixar conteúdo cifrado</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seção de Abertura do Envelope Digital -->
+    <div class="section">
+        <h2>Abrir Envelope Digital (RSA + AES)</h2>
+        
+        <!-- Entrada da Chave Privada RSA -->
+        <div class="tabs">
+            <div class="tab active" id="tabOpenEnvelopeFile" onclick="switchOpenEnvelopeTab('File')">Entrada de Arquivo</div>
+            <div class="tab" id="tabOpenEnvelopeText" onclick="switchOpenEnvelopeTab('Text')">Entrada de Texto</div>
         </div>
         
-        <button onclick="cryptMessage()">Criptografar</button>
-        <button id="downloadEncBtn" onclick="downloadEncrypted()" style="display:none;">Baixar como arquivo</button>
+        <div class="tab-content" id="contentOpenEnvelopeText">
+            <label for="openEnvelopeKeyText">Cole a chave privada RSA:</label>
+            <textarea type="text" id="openEnvelopeKeyText" rows="4" cols="50" placeholder="Digite aqui a chave privada"></textarea>
+        </div>
+        <div class="tab-content active" id="contentOpenEnvelopeFile">
+            <label for="openEnvelopeKeyFile">Selecione a chave privada RSA (.pem):</label>
+            <input type="file" class="switch_file" id="openEnvelopeKeyFile" accept=".pem" />
+        </div>
+        <!-- Entrada da Chave AES cifrada -->
+        <div class="file-input-container">
+            <label for="encryptedKeyInput">Cole a chave AES cifrada com RSA:</label>
+            <textarea id="encryptedKeyInput" rows="3" cols="50" placeholder="Cole a chave AES cifrada com RSA"></textarea>
+        </div>
         
-        <div class="result-container">
-            <h3>Resultado da Criptografia (<span id="outputFormatLabel">Base64</span>):</h3>
-            <p id="encryptedMessage" class="message-output"></p>
+        <!-- Entrada do conteúdo cifrado com AES -->
+        <div class="file-input-container">
+            <label for="envelopeCipherInput">Cole o conteúdo cifrado com AES:</label>
+            <textarea id="envelopeCipherInput" rows="4" cols="50" placeholder="Cole o conteúdo cifrado com AES"></textarea>
+        </div>
+        
+        <!-- Entrada do IV (para modo CBC) -->
+        <div class="file-input-container" id="openEnvelopeIvContainer">
+            <label for="envelopeIvInput">Cole o Vetor de Inicialização (IV):</label>
+            <textarea id="envelopeIvInput" rows="2" cols="50" placeholder="Cole o IV aqui (necessário para modo CBC)"></textarea>
+        </div>
+        
+        <div class="options-group">
+            <div style="font-weight: bold; margin-bottom: 8px;">Configurações para Abrir o Envelope:</div>
+            
+            <div class="format-selector">
+                <span>Tamanho da chave AES:</span>
+                <label><input type="radio" name="openEnvelopeKeySize" value="128" checked> 128 bits</label>
+                <label><input type="radio" name="openEnvelopeKeySize" value="192"> 192 bits</label>
+                <label><input type="radio" name="openEnvelopeKeySize" value="256"> 256 bits</label>
+            </div>
+            
+            <div class="format-selector">
+                <span>Modo de operação AES:</span>
+                <label><input type="radio" name="openEnvelopeMode" value="CBC" checked onclick="toggleOpenEnvelopeIvField(true)"> CBC</label>
+                <label><input type="radio" name="openEnvelopeMode" value="ECB" onclick="toggleOpenEnvelopeIvField(false)"> ECB</label>
+            </div>
+            
+            <div class="format-selector">
+                <span>Formato de entrada:</span>
+                <label><input type="radio" name="openEnvelopeFormat" value="BASE64" checked> BASE64</label>
+                <label><input type="radio" name="openEnvelopeFormat" value="HEX"> HEX</label>
+            </div>
+        </div>
+        
+        <button onclick="openDigitalEnvelope()">Abrir Envelope Digital</button>
+        <button id="downloadOpenEnvelopeBtn" onclick="downloadOpenEnvelopeContent()" style="display:none;">Baixar conteúdo decifrado</button>
+        
+        <div class="result-container" id="openEnvelopeResultContainer" style="display: none;">
+            <h3>Conteúdo do Envelope Digital:</h3>
+            <div class="message-output" id="openEnvelopeOutput"></div>
         </div>
     </div>
 
@@ -172,6 +284,49 @@
         </div>
     </div>
 
+    <!-- Seção de Criptografia RSA -->
+    <div class="section">
+        <h2>Criptografia RSA com Chave Pública</h2>
+        
+        <!-- Tabs para alternar entre arquivo e texto -->
+        <div class="tabs">
+            <div class="tab active" id="tabEncryptFile" onclick="switchEncryptTab('File')">Enviar Arquivo</div>
+            <div class="tab" id="tabEncryptText" onclick="switchEncryptTab('Text')">Escrever Chave</div>
+        </div>
+        
+        <!-- Conteúdo da aba de envio de arquivo -->
+        <div id="contentEncryptFile" class="tab-content active">
+            <div class="file-input-container">
+                <label for="encryptKeyFile">Selecione o arquivo da chave pública (.pem):</label>
+                <input type="file" class="switch_file" id="encryptKeyFile" accept=".pem" />
+            </div>
+        </div>
+        
+        <!-- Conteúdo da aba de entrada de texto -->
+        <div id="contentEncryptText" class="tab-content">
+            <label for="encryptKeyText">Cole a chave pública:</label>
+            <textarea id="encryptKeyText" rows="5" cols="50" placeholder="Cole a chave pública aqui"></textarea>
+        </div>
+        
+        <label for="messageInput">Digite a mensagem para criptografar:</label>
+        <textarea id="messageInput" rows="4" cols="50" placeholder="Coloque aqui a mensagem a ser criptografada"></textarea>
+        <br>
+        
+        <div class="format-selector">
+            <span>Formato de saída:</span>
+            <label><input type="radio" name="outputFormat" value="BASE64" checked> BASE64</label>
+            <label><input type="radio" name="outputFormat" value="HEX"> HEX</label>
+        </div>
+        
+        <button onclick="cryptMessage()">Criptografar</button>
+        <button id="downloadEncBtn" onclick="downloadEncrypted()" style="display:none;">Baixar como arquivo</button>
+        
+        <div class="result-container">
+            <h3>Resultado da Criptografia (<span id="outputFormatLabel">Base64</span>):</h3>
+            <p id="encryptedMessage" class="message-output"></p>
+        </div>
+    </div>
+
     <!-- Seção de Descriptografia RSA -->
     <div class="section">
         <h2>Descriptografia RSA com Chave Privada</h2>
@@ -197,7 +352,7 @@
         </div>
         
         <label for="encryptedInput">Cole a mensagem criptografada:</label>
-        <textarea id="encryptedInput" rows="4" cols="50"></textarea>
+        <textarea id="encryptedInput" rows="4" cols="50" placeholder="Digite aqui a mensagem a ser descriptografada"></textarea>
         <br>
         
         <div class="format-selector">
@@ -286,142 +441,5 @@
         </div>
     </div>
     
-    <!-- Nova Seção de Envelope Digital (AES + RSA) -->
-    <div class="section">
-        <h2>Envelope Digital (RSA + AES)</h2>
-        <p>Esta seção combina criptografia RSA e AES: a chave AES é cifrada com RSA e o conteúdo é cifrado com AES.</p>
-        
-        <!-- Entrada da Chave Pública RSA -->
-        <div class="file-input-container">
-            <label for="envelopeRsaKeyFile">Selecione a chave pública RSA (.pem):</label>
-            <input type="file" class="switch_file" id="envelopeRsaKeyFile" accept=".pem" />
-        </div>
-        
-        <!-- Entrada de dados: Texto ou Arquivo -->
-        <div class="tabs">
-            <div class="tab active" id="tabEnvelopeText" onclick="switchEnvelopeTab('Text')">Entrada de Texto</div>
-            <div class="tab" id="tabEnvelopeFile" onclick="switchEnvelopeTab('File')">Entrada de Arquivo</div>
-        </div>
-        
-        <div id="contentEnvelopeText" class="tab-content active">
-            <label for="envelopeTextInput">Digite o texto para criptografar:</label>
-            <textarea id="envelopeTextInput" rows="4" cols="50" placeholder="Digite o texto a ser criptografado"></textarea>
-        </div>
-        
-        <div id="contentEnvelopeFile" class="tab-content">
-            <div class="file-input-container">
-                <label for="envelopeFileInput">Selecione o arquivo para criptografar:</label>
-                <input type="file" class="switch_file" id="envelopeFileInput" />
-                <p style="color: #666; font-size: 0.9em;">O arquivo será lido como texto. Para arquivos binários, use outra ferramenta.</p>
-            </div>
-        </div>
-        
-        <div class="options-group">
-            <div style="font-weight: bold; margin-bottom: 8px;">Configurações do Envelope Digital:</div>
-            
-            <div class="format-selector">
-                <span>Tamanho da chave AES:</span>
-                <label><input type="radio" name="envelopeKeySize" value="128" checked> 128 bits</label>
-                <label><input type="radio" name="envelopeKeySize" value="192"> 192 bits</label>
-                <label><input type="radio" name="envelopeKeySize" value="256"> 256 bits</label>
-            </div>
-            
-            <div class="format-selector">
-                <span>Modo de operação AES:</span>
-                <label><input type="radio" name="envelopeMode" value="CBC" checked> CBC</label>
-                <label><input type="radio" name="envelopeMode" value="ECB"> ECB</label>
-            </div>
-            
-            <div class="format-selector">
-                <span>Formato de saída:</span>
-                <label><input type="radio" name="envelopeOutputFormat" value="BASE64" checked> BASE64</label>
-                <label><input type="radio" name="envelopeOutputFormat" value="HEX"> HEX</label>
-            </div>
-        </div>
-        
-        <button onclick="createDigitalEnvelope()">Criar Envelope Digital</button>
-        
-        <div class="result-container" id="envelopeResultContainer" style="display: none;">
-            <h3>Resultado do Envelope Digital:</h3>
-            
-            <div>
-                <h4>Chave AES cifrada com RSA:</h4>
-                <p id="envelopeKeyOutput" class="message-output"></p>
-                <button onclick="downloadEnvelopeOutput('envelopeKeyOutput', 'chave_aes_cifrada.txt')">Baixar chave cifrada</button>
-            </div>
-            
-            <div id="envelopeIvContainer" style="margin-top: 15px;">
-                <h4>Vetor de Inicialização (IV):</h4>
-                <p id="envelopeIvOutput" class="message-output"></p>
-                <button onclick="downloadEnvelopeOutput('envelopeIvOutput', 'iv_envelope.txt')">Baixar IV</button>
-            </div>
-            
-            <div style="margin-top: 15px;">
-                <h4>Conteúdo Cifrado com AES:</h4>
-                <p id="envelopeCipherOutput" class="message-output"></p>
-                <button onclick="downloadEnvelopeOutput('envelopeCipherOutput', 'conteudo_cifrado_aes.txt')">Baixar conteúdo cifrado</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Seção de Abertura do Envelope Digital -->
-    <div class="section">
-        <h2>Abrir Envelope Digital (RSA + AES)</h2>
-        
-        <!-- Entrada da Chave Privada RSA -->
-        <div class="file-input-container">
-            <label for="openEnvelopeKeyFile">Selecione a chave privada RSA (.pem):</label>
-            <input type="file" class="switch_file" id="openEnvelopeKeyFile" accept=".pem" />
-        </div>
-        
-        <!-- Entrada da Chave AES cifrada -->
-        <div class="file-input-container">
-            <label for="encryptedKeyInput">Cole a chave AES cifrada com RSA:</label>
-            <textarea id="encryptedKeyInput" rows="3" cols="50" placeholder="Cole a chave AES cifrada com RSA"></textarea>
-        </div>
-        
-        <!-- Entrada do conteúdo cifrado com AES -->
-        <div class="file-input-container">
-            <label for="envelopeCipherInput">Cole o conteúdo cifrado com AES:</label>
-            <textarea id="envelopeCipherInput" rows="4" cols="50" placeholder="Cole o conteúdo cifrado com AES"></textarea>
-        </div>
-        
-        <!-- Entrada do IV (para modo CBC) -->
-        <div class="file-input-container" id="openEnvelopeIvContainer">
-            <label for="envelopeIvInput">Cole o Vetor de Inicialização (IV):</label>
-            <textarea id="envelopeIvInput" rows="2" cols="50" placeholder="Cole o IV aqui (necessário para modo CBC)"></textarea>
-        </div>
-        
-        <div class="options-group">
-            <div style="font-weight: bold; margin-bottom: 8px;">Configurações para Abrir o Envelope:</div>
-            
-            <div class="format-selector">
-                <span>Tamanho da chave AES:</span>
-                <label><input type="radio" name="openEnvelopeKeySize" value="128" checked> 128 bits</label>
-                <label><input type="radio" name="openEnvelopeKeySize" value="192"> 192 bits</label>
-                <label><input type="radio" name="openEnvelopeKeySize" value="256"> 256 bits</label>
-            </div>
-            
-            <div class="format-selector">
-                <span>Modo de operação AES:</span>
-                <label><input type="radio" name="openEnvelopeMode" value="CBC" checked onclick="toggleOpenEnvelopeIvField(true)"> CBC</label>
-                <label><input type="radio" name="openEnvelopeMode" value="ECB" onclick="toggleOpenEnvelopeIvField(false)"> ECB</label>
-            </div>
-            
-            <div class="format-selector">
-                <span>Formato de entrada:</span>
-                <label><input type="radio" name="openEnvelopeFormat" value="BASE64" checked> BASE64</label>
-                <label><input type="radio" name="openEnvelopeFormat" value="HEX"> HEX</label>
-            </div>
-        </div>
-        
-        <button onclick="openDigitalEnvelope()">Abrir Envelope Digital</button>
-        <button id="downloadOpenEnvelopeBtn" onclick="downloadOpenEnvelopeContent()" style="display:none;">Baixar conteúdo decifrado</button>
-        
-        <div class="result-container" id="openEnvelopeResultContainer" style="display: none;">
-            <h3>Conteúdo do Envelope Digital:</h3>
-            <div class="message-output" id="openEnvelopeOutput"></div>
-        </div>
-    </div>
 </body>
 </html>

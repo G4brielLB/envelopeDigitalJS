@@ -661,6 +661,16 @@ document.querySelectorAll('input[name="aesDecMode"]').forEach(radio => {
     });
 });
 
+function switchPublicTab(tab) {
+    document.getElementById('tabPublicText').classList.remove('active');
+    document.getElementById('tabPublicFile').classList.remove('active');
+    document.getElementById('contentPublicText').classList.remove('active');
+    document.getElementById('contentPublicFile').classList.remove('active');
+    
+    document.getElementById('tabPublic' + tab).classList.add('active');
+    document.getElementById('contentPublic' + tab).classList.add('active');
+}
+
 // Função para trocar entre as abas do envelope digital
 function switchEnvelopeTab(tab) {
     document.getElementById('tabEnvelopeText').classList.remove('active');
@@ -671,6 +681,17 @@ function switchEnvelopeTab(tab) {
     document.getElementById('tabEnvelope' + tab).classList.add('active');
     document.getElementById('contentEnvelope' + tab).classList.add('active');
 }
+
+function switchOpenEnvelopeTab(tab) {
+    document.getElementById('tabOpenEnvelopeText').classList.remove('active');
+    document.getElementById('tabOpenEnvelopeFile').classList.remove('active');
+    document.getElementById('contentOpenEnvelopeText').classList.remove('active');
+    document.getElementById('contentOpenEnvelopeFile').classList.remove('active');
+    
+    document.getElementById('tabOpenEnvelope' + tab).classList.add('active');
+    document.getElementById('contentOpenEnvelope' + tab).classList.add('active');
+}
+
 
 // Função para mostrar/ocultar o campo IV no envelope digital
 function toggleOpenEnvelopeIvField(show) {
@@ -711,8 +732,9 @@ async function createDigitalEnvelope() {
     try {
         // 1. Verificar se a chave pública RSA foi carregada
         const rsaKeyFileInput = document.getElementById('envelopeRsaKeyFile');
-        if (!rsaKeyFileInput.files.length) {
-            alert('Por favor, selecione o arquivo da chave pública RSA (.pem).');
+        const publicKeyTextInput = document.getElementById('publicTextInput').value.trim();
+        if (!rsaKeyFileInput.files.length && !publicKeyTextInput) {
+            alert('Por favor, selecione o arquivo da chave pública RSA (.pem) ou insira a chave pública no campo de texto.');
             return;
         }
         
@@ -740,7 +762,12 @@ async function createDigitalEnvelope() {
         lastEnvelopeOutputFormat = outputFormat;
         
         // 4. Carregar a chave pública RSA
-        const publicKey = await loadPublicKeyFromFile(rsaKeyFileInput.files[0]);
+        let publicKey;
+        if (rsaKeyFileInput.files.length) {
+            publicKey = await loadPublicKeyFromFile(rsaKeyFileInput.files[0]);
+        } else {
+            publicKey = forge.pki.publicKeyFromPem(publicKeyTextInput);
+        }
         
         // 5. Gerar uma chave AES aleatória
         const keyBytes = keySize / 8;
@@ -824,10 +851,11 @@ async function openDigitalEnvelope() {
     console.log('Iniciando a abertura do envelope digital...');
     
     try {
-        // 1. Verificar se a chave privada RSA foi carregada
+        // 1. Verificar se a chave privada RSA foi carregada ou inserida
         const rsaKeyFileInput = document.getElementById('openEnvelopeKeyFile');
-        if (!rsaKeyFileInput.files.length) {
-            alert('Por favor, carregue um arquivo .pem com a chave privada RSA.');
+        const rsaKeyTextInput = document.getElementById('openEnvelopeKeyText').value.trim();
+        if (!rsaKeyFileInput.files.length && !rsaKeyTextInput) {
+            alert('Por favor, carregue um arquivo .pem com a chave privada RSA ou insira a chave privada no campo de texto.');
             return;
         }
         
@@ -860,7 +888,12 @@ async function openDigitalEnvelope() {
         const inputFormat = document.querySelector('input[name="openEnvelopeFormat"]:checked').value;
         
         // 5. Carregar a chave privada RSA
-        const privateKey = await loadPrivateKeyFromFile(rsaKeyFileInput.files[0]);
+        let privateKey;
+        if (rsaKeyFileInput.files.length) {
+            privateKey = await loadPrivateKeyFromFile(rsaKeyFileInput.files[0]);
+        } else {
+            privateKey = forge.pki.privateKeyFromPem(rsaKeyTextInput);
+        }
         
         // 6. Converter os dados do formato de entrada
         let encryptedKeyBytes, encryptedContentBytes, ivBytes = null;
