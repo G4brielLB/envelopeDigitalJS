@@ -1,8 +1,14 @@
-📦 Sistema de Envelope Digital
-🔐 Introdução
+# 📦 Sistema de Envelope Digital
+
+## Autores
+Gabriel Lopes Bastos (G4brielLB)
+José Victor Vieira de Oliveira (@vickminari)
+Pedro Emanuel Moreira Carvalho (@PedroEmanuelMoreiraCarvalho)
+
+## 🔐 Introdução
 A criação e abertura de envelopes digitais é uma técnica utilizada para garantir a confidencialidade e integridade de informações trocadas em meio eletrônico. O processo consiste em criptografar os dados com uma chave simétrica (geralmente aleatória) e, em seguida, proteger essa chave utilizando criptografia assimétrica. O "envelope" resultante só pode ser aberto pelo destinatário, que possui a chave privada correspondente à chave pública usada na criptografia.
 
-🛠️ Implementação
+## 🛠️ Implementação
 O sistema foi desenvolvido com uma interface simples e funcional, utilizando:
 
 HTML para a estrutura da interface;
@@ -26,15 +32,15 @@ Criptografia e descriptografia com RSA.
 
 É possível executar o sistema localmente (via localhost) ou publicá-lo no GitHub Pages.
 
-▶️ Modo de Uso
-3.1. 🔑 Geração de Chaves RSA
+## ▶️ Modo de Uso
+### 3.1. 🔑 Geração de Chaves RSA
 Selecione o tamanho da chave: 1024 ou 2048 bits;
 
 Clique em "Gerar Chaves";
 
 As chaves pública e privada são exibidas e podem ser copiadas ou baixadas em .pem.
 
-3.2. ✉️ Criação de Envelope Digital
+### 3.2. ✉️ Criação de Envelope Digital
 Insira a chave pública RSA manualmente ou via arquivo .pem;
 
 Escreva o texto ou envie um arquivo de texto a ser criptografado;
@@ -59,7 +65,7 @@ Conteúdo cifrado com AES;
 
 Todos os dados podem ser baixados individualmente.
 
-3.3. 📬 Abertura de Envelope Digital
+### 3.3. 📬 Abertura de Envelope Digital
 Insira a chave privada RSA (arquivo .pem ou colando);
 
 Preencha os campos:
@@ -74,7 +80,7 @@ Selecione os mesmos parâmetros de criptografia utilizados;
 
 Clique em "Abrir Envelope Digital" para ver o conteúdo original.
 
-3.4. 🔒 Criptografia com AES
+### 3.4. 🔒 Criptografia com AES
 Insira o texto ou arquivo a ser criptografado;
 
 Selecione:
@@ -95,7 +101,7 @@ Texto cifrado (em BASE64 ou HEX);
 
 Todos os dados podem ser baixados.
 
-3.5. 🔐 Criptografia com RSA
+### 3.5. 🔐 Criptografia com RSA
 Insira a chave pública (arquivo .pem ou colando);
 
 Digite a mensagem a ser criptografada;
@@ -104,7 +110,7 @@ Escolha o formato de saída: BASE64 ou HEX;
 
 Clique em "Criptografar" e o resultado será exibido e poderá ser copiado ou baixado.
 
-3.6. 🔓 Descriptografia com RSA
+### 3.6. 🔓 Descriptografia com RSA
 Insira a chave privada (arquivo .pem ou colando);
 
 Forneça o texto cifrado (manual ou arquivo);
@@ -113,7 +119,7 @@ Escolha o formato de entrada (BASE64 ou HEX);
 
 Clique em "Descriptografar" para obter o texto original.
 
-3.7. 🧩 Descriptografia com AES
+### 3.7. 🧩 Descriptografia com AES
 Insira:
 
 Texto cifrado;
